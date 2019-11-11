@@ -1,0 +1,998 @@
+//fcfs
+#include<bits/stdc++.h>
+#define f first
+#define s second
+using namespace std;
+
+int main()
+{
+	int n,i;
+	cin>>n;
+	vector<pair<pair<int,int>,int> > t(n);//at,pr,bt
+	double wt=0,tat=0;
+	for(i=0;i<n;i++)
+	{
+		cin>>t[i].f.f>>t[i].s;
+		t[i].f.s = i;
+	}
+
+	sort(t.begin(),t.end());
+	int curr_t = t[0].f.f;
+	for(i=0;i<n;i++)
+	{
+		curr_t = max(curr_t,t[i].f.f);
+		wt += max(t[i].f.f,curr_t)-t[i].f.f;
+		tat += max(t[i].f.f,curr_t)-t[i].f.f + t[i].s;
+		curr_t += t[i].s;
+	}
+
+	cout<<"average_waiting time  "<<wt/n<<endl;
+	cout<<"average tat "<<tat/n<<endl;
+	return 0;
+}
+
+
+
+//bankers algo
+#include<bits/stdc++.h>
+using namespace std;
+
+int main(){
+	int p,r;
+	cin>>p>>r;
+	vector<vector<int> > allocation(p,vector<int>(r));
+	vector<vector<int> > request(p,vector<int>(r));
+	vector<int> avail(r);
+	
+	for(int i=0;i<r;i++)
+		cin>>avail[i];
+	for(int i=0;i<p;i++)
+		for(int j=0;j<r;j++)
+		{
+			cin>>allocation[i][j]>>request[i][j];
+		}
+	int arr[p];
+	for(int i=0;i<p;i++)
+		arr[i] = i+1;
+	
+	do{
+	int i=0,j;
+	vector<int> work = avail;
+		while(i<p){
+			for(j=0;j<r;j++){
+				if(work[j] > request[arr[i]][j]) 
+					break;
+				
+				}
+				
+				if(j == r)
+				{
+					for(int k=0;k<r;k++)
+						work[k] += allocation[arr[i]][k];
+				}
+				else
+					break;
+				i++;
+		}
+		if(i == p){
+			for(int k=0;k<p;k++)
+				cout<<arr[k]-1<<" ";
+			cout<<endl;
+		}
+	}while(next_permutation(arr,arr+p));
+}
+
+
+//bestfit
+#include<bits/stdc++.h>
+using namespace std;
+
+int main(){
+	int bs,ps;
+	cin>>bs;
+	int block[bs];
+	for(int i=0;i<bs;i++)cin>>block[i];
+	cin>>ps;
+	int process[ps];
+	for(int i=0;i<ps;i++)cin>>process[i];
+	int j,k=0,c;
+	int ans[ps];
+	for(int i=0;i<ps;i++){
+		int ind=-1;
+		for(j=0;j<bs;j++){
+			if(block[j]>=process[i]){
+				if(ind !=-1 && block[j] >= block[ind])continue;
+				ind = j;
+			}
+		}
+		if(ind == -1)ans[i] = -1;
+		else{ans[i] = ind+1;block[ind] -= process[i];}
+	}
+	
+	for(int i=0;i<ps;i++)
+		cout<<"process "<<i+1<<"is allocated block "<<ans[i]<<endl;
+	
+	return 0;
+}
+
+
+
+//disk
+#include<bits/stdc++.h>
+using namespace std;
+
+int main(){
+	int n,ind;
+	cin>>n;
+	int arr[n];
+	for(int i=0;i<n;i++){
+		cin>>arr[i];
+	}
+	int hp,ans=0;
+	cin>>hp;
+	int t = hp;
+	for(int i=0;i<n;i++)
+		{ans += abs(t-arr[i]);t = arr[i];}
+	cout<<"For fcfs : "<<ans<<endl;
+	ans = 0;	t = hp;
+	for(int i=0;i<n;i++){
+	int val = 10000;
+		for(int j=i;j<n;j++){
+			if(abs(t-arr[j]) < val)
+			{ind=j;val = abs(t-arr[j]);}
+			
+		}
+		t = arr[ind];
+		swap(arr[i],arr[ind]);
+		ans += val;
+	}
+	cout<<"For sstf : "<<ans<<endl;
+}
+
+
+
+//fifo
+#include<bits/stdc++.h>
+using namespace std;
+
+int main(){
+
+	int n,fs;
+	cin>>n;
+	vector<int> in(n);
+	for(int i=0;i<n;i++)
+		cin>>in[i];
+	cin>>fs;
+	int c=fs;
+	vector<pair<int,int> > v;
+
+	for(int i=0;i<fs;i++)
+		v.push_back(make_pair(i,in[i]));
+	int  j;
+	for(int i= fs;i<n;i++){
+		for(j=0;j<fs;j++)
+			if(v[j].second == in[i])
+				break;
+				
+		if(j == fs)
+		{
+		c++;
+			sort(v.rbegin(),v.rend());
+			v[0].first = 0;v[0].second = in[i];
+			for(j=1;j<fs;j++)
+				v[j].first++;
+		}
+		
+	}
+	cout<<"Page fault "<<c<<endl;
+}
+
+
+
+
+//multilevel feedback
+#include<bits/stdc++.h>
+using namespace std;
+struct process{
+int ind;
+int at,bt;
+
+friend bool operator <(process a,process b);
+};
+bool operator <(process a,process b)
+{
+	return a.at<=b.at;
+}
+int main()
+{
+
+int n,t1,t2;
+cin>>n>>t1>>t2;
+vector<process> v(n);
+for(int i=0;i<n;i++){
+	v[i].ind = i;
+	cin>>v[i].at>>v[i].bt;
+}
+sort(v.begin(),v.end());
+queue<process> q1,q2,q3;
+int curr = 0;
+int k=0;
+process p;
+//q1.push(v[0]);
+do
+{
+	while(k<n && curr >= v[k].at)
+	{q1.push(v[k]);k++;}
+	if(!q1.empty()){
+	p = q1.front();q1.pop();
+	cout<<p.ind<<" ";
+	if(p.bt > t1){p.bt -= t1;q2.push(p);curr += t1;}
+	else{curr += p.bt;}
+	}
+	else if(!q2.empty()){
+
+	p = q2.front();
+		if(k == n){
+		q2.pop();
+		cout<<p.ind<<" ";
+		if(p.bt > t2){p.bt -= t2;q3.push(p);curr += t2;}
+		else{curr += p.bt;}	
+		}
+		
+		else{
+		if(p.bt+curr <= v[k].at){q2.pop();cout<<p.ind<<" ";curr += min(p.bt,t2);if(p.bt > t2){p.bt -= t2;q3.push(p);}}
+		else{p.bt -= curr-v[k].at;curr = v[k].at;cout<<p.ind<<" ";}
+		}
+	}
+	else{
+		p = q3.front();q3.pop();
+		cout<<p.ind<<" ";
+	}
+}while(!q1.empty() || !q2.empty() || !q3.empty());
+
+
+return 0;
+}                                                  
+
+
+
+//next fit
+#include<bits/stdc++.h>
+using namespace std;
+
+int main(){
+	int bs,ps;
+	cin>>bs;
+	int block[bs];
+	for(int i=0;i<bs;i++)cin>>block[i];
+	cin>>ps;
+	int process[ps];
+	for(int i=0;i<ps;i++)cin>>process[i];
+	int j,k=0,c;
+	int ans[ps];
+	for(int i=0;i<ps;i++){
+		j = k;
+		c=0;
+		while(c<bs && block[j]<process[i]){
+			j = (j+1)%bs;c++;
+		}
+		if(block[j] >= process[i])
+		{ans[i] = j+1;block[j] -= process[i];}
+		else
+			ans[i] = -1;
+			
+		k = (j+1)%bs;
+	}
+	
+	for(int i=0;i<ps;i++)
+		cout<<"process "<<i+1<<"is allocated block "<<ans[i]<<endl;
+	
+	return 0;
+}
+
+
+
+
+//optimal page
+#include<bits/stdc++.h>
+using namespace std;
+
+int main(){
+	
+	int n,fs;
+	cin>>n;
+	vector<int> in(n);
+	for(int i=0;i<n;i++)
+		cin>>in[i];
+	cin>>fs;
+	int i,j,c=fs;
+	map<int,int> mp,pos;
+	vector<int> v(fs);
+	for(i=0;i<fs;i++)
+		v[i] = in[i];
+	for(i=fs;i<n;i++)
+		mp[in[i]]++;
+	for(i=fs;i<n;i++)
+	{	
+	
+		mp[in[i]]--;
+		if(mp[in[i]] == 0)
+			mp.erase(mp.find(in[i]));
+		for(j=0;j<fs;j++)
+			if(v[j] == in[i])
+				break;
+		if(j<fs)continue;
+		c++;
+		for(j=0;j<fs;j++)
+		{
+			if(mp.find(v[j]) == mp.end())
+			{
+				v[j] = in[i];
+				break;
+			}
+		}
+		if(j<fs)continue;
+		for(int k=0;k<fs;k++){
+		for(j=n-1;j>=0;j--){
+			if(in[j] == v[k])
+				{pos[k] = j;}
+			}
+		}
+		int minn = 100;
+		for(j=0;j<fs;j++)
+			minn = min(minn,pos[j]);
+		v[minn] = in[i];
+		
+	}
+	cout<<c<<endl;
+}
+
+
+
+
+//priority scheduling
+#include<bits/stdc++.h>
+#define f first
+#define s second
+using namespace std;
+
+
+int main()
+{
+int n;
+cin>>n;
+vector<pair<pair<int,int>,int> >in(n);
+for(int i=0;i<n;i++)
+	cin>>in[i].f.f>>in[i].f.s>>in[i].s;
+
+sort(in.begin(),in.end());
+int curr_time = in[0].f.f;
+int k=0;
+double tt=0,wt=0;
+vector<pair<int,pair<int,int> > >v;
+pair<int,pair<int,int> > p;
+do{
+	while(k<n && curr_time >= in[k].f.f)
+	{
+		v.push_back(make_pair(in[k].s,make_pair(k,in[k].f.s)));k++;
+	}
+	sort(v.rbegin(),v.rend());
+	p = v.back();
+	v.pop_back();
+	(p.s.s)--;
+	if(p.s.s == 0){
+		tt += curr_time-in[p.s.f].f.f;	
+		wt -= in[p.s.f].f.s;
+	}
+else
+	v.push_back(p);
+	curr_time++;
+}while(v.size()>0);
+wt += tt;
+cout<<"Average Waiting time "<<wt/n<<endl;
+cout<<"Average Turnaround time "<<tt/n<<endl;
+return 0;
+}
+
+
+
+//round robin
+#include<bits/stdc++.h>
+#define f first
+#define s second
+using namespace std;
+
+
+int main()
+{
+int n;
+cin>>n;
+vector<pair<int,int> >in(n);
+for(int i=0;i<n;i++)
+	cin>>in[i].f>>in[i].s;
+int quant;
+cin>>quant;
+sort(in.begin(),in.end());
+queue<pair<int,int> >q;
+q.push(make_pair(0,in[0].s));
+int k=1;
+int curr_time = in[0].f;
+double wt=0,tt=0;
+pair<int,int> p;
+while(!q.empty()){
+
+p = q.front();q.pop();
+curr_time += min(p.s,quant);
+while(k<n && in[k].f<=curr_time)
+{q.push(make_pair(k,in[k].s));k++;}
+//cout<<curr_time<<" ";
+if(p.s <= quant){
+//	curr_time += p.s;
+	tt += (curr_time-in[p.f].f);
+	wt -= in[p.f].s;
+	
+}
+else{
+//curr_time += quant;
+q.push(make_pair(p.f,p.s-quant));
+}
+
+
+}
+wt += tt;
+cout<<"Average Waiting time "<<wt/n<<endl;
+cout<<"Average Turnaround time "<<tt/n<<endl;
+return 0;
+}
+
+
+
+//producer consumer
+#include<bits/stdc++.h>
+
+using namespace std;
+vector<int> v;
+int n,mutex=1,empty,full;
+int consumer()
+{
+	int x;
+	wait = wait(mutex);
+	wait = wait(full);
+	x = v[out];
+	out = (out+1)%n;
+	signal = signal(mutex);
+	signal = signal(empty);
+	return x;
+}
+void producer(int x)
+{
+	wait = wait(mutex);
+	wait = wait(empty);
+	v[in] = x;
+	in = (in +1)%n;
+	signal = signal(mutex);
+	signal = signal(full);
+	
+}
+int main()
+{
+	int x;
+	cin>>n;
+	empty = n;full=0;
+	v.resize(n);
+	int in=0,out=0;
+	char ch;
+	while(true){
+	cin>>ch;
+	if(ch == 'c')
+	{
+		
+		cout<<consumer();
+	}	
+	else if(ch == 'p')
+	{
+		cin>>x;
+		producer(x);
+	}
+	else
+		break;
+	}
+}
+
+//rr with context switch
+#include<bits/stdc++.h>
+
+using namespace std;
+vector<int> v;
+int n,mutex=1,empty,full;
+int consumer()
+{
+	int x;
+	wait = wait(mutex);
+	wait = wait(full);
+	x = v[out];
+	out = (out+1)%n;
+	signal = signal(mutex);
+	signal = signal(empty);
+	return x;
+}
+void producer(int x)
+{
+	wait = wait(mutex);
+	wait = wait(empty);
+	v[in] = x;
+	in = (in +1)%n;
+	signal = signal(mutex);
+	signal = signal(full);
+	
+}
+int main()
+{
+	int x;
+	cin>>n;
+	empty = n;full=0;
+	v.resize(n);
+	int in=0,out=0;
+	char ch;
+	while(true){
+	cin>>ch;
+	if(ch == 'c')
+	{
+		
+		cout<<consumer();
+	}	
+	else if(ch == 'p')
+	{
+		cin>>x;
+		producer(x);
+	}
+	else
+		break;
+	}
+}
+
+
+//sjf
+#include<bits/stdc++.h>
+#define f first
+#define s second
+using namespace std;
+
+int main()
+{
+	int n,i,ct=0;
+	cin>>n;
+	vector<pair<int,int> >org_t(n);
+	vector<pair<pair<int,int>,int> > t(n);//at,bt
+	double wt=0,tat=0;
+	for(i=0;i<n;i++)
+	{
+		cin>>t[i].f.f>>t[i].f.s;
+		t[i].s = i;
+		org_t[i].f = t[i].f.f;
+		org_t[i].s = t[i].f.s;
+	}
+	
+	sort(t.begin(),t.end());
+	for(i=0;i<n;i++)
+	{
+		ct = max(ct,t[i].f.f);
+		wt += ct-org_t[t[i].s].f;
+		tat += ct-org_t[t[i].s].f+t[i].f.s;
+		int j=i+1;
+		while(j<n && t[j].f.f < ct+t[i].f.s)
+		{
+			t[j].f.f = ct+t[i].f.s;
+			j++;	
+		}
+		sort(t.begin()+i+1,t.end());
+	}
+
+	cout<<"average_waiting time  "<<wt/n<<endl;
+	cout<<"average tat "<<tat/n<<endl;
+	return 0;
+}
+
+
+
+//sjf pre
+#include<bits/stdc++.h>
+#define f first
+#define s second
+using namespace std;
+
+int main()
+{
+	int n,i,ct=0,ti=0,max_t =0;
+	cin>>n;
+	vector<pair<int,int> >org_t(n);
+	vector<pair<pair<int,int>,int> > t(n);//at,bt
+	double wt=0,tat=0;
+	for(i=0;i<n;i++)
+	{
+		cin>>t[i].f.f>>t[i].f.s;
+		t[i].s = i;
+		org_t[i].f = t[i].f.f;
+		org_t[i].s = t[i].f.s;
+	}
+	
+	sort(t.begin(),t.end());
+	i=0;
+	for(ti=0;i<n;ti++)
+	{
+		(t[i].f.s)--;
+		int j=i;
+		while(j<n && t[j].f.f <= t[i].f.f)
+		{
+			(t[j].f.f)++;
+			j++;
+		}
+		//(t[i].f.f)++;	
+		sort(t.begin()+i,t.end());
+
+		if(t[i].f.s == 0){
+		wt += ti-org_t[t[i].s].f-org_t[t[i].s].s;
+		tat += ti-org_t[t[i].s].f;			
+		i++;
+		}
+	}
+
+	cout<<"average_waiting time  "<<wt/n<<endl;
+	cout<<"average tat "<<tat/n<<endl;
+	return 0;
+}
+
+
+
+
+//worst fit
+#include<bits/stdc++.h>
+using namespace std;
+
+int main(){
+	int bs,ps;
+	cin>>bs;
+	int block[bs];
+	for(int i=0;i<bs;i++)cin>>block[i];
+	cin>>ps;
+	int process[ps];
+	for(int i=0;i<ps;i++)cin>>process[i];
+	int j,k=0,c;
+	int ans[ps];
+	for(int i=0;i<ps;i++){
+		int ind=-1;
+		for(j=0;j<bs;j++){
+			if(block[j]>=process[i]){
+				if(ind !=-1 && block[j] < block[ind])continue;
+				ind = j;
+			}
+		}
+		if(ind == -1)ans[i] = -1;
+		else{ans[i] = ind+1;block[ind] -= process[i];}
+	}
+	
+	for(int i=0;i<ps;i++)
+		cout<<"process "<<i+1<<"is allocated block "<<ans[i]<<endl;
+	
+	return 0;
+}
+
+
+
+//dinning philosopher
+#include <iostream>
+using namespace std;
+#define n 5
+int arr[n];
+int m;
+void dine()
+{
+if(m==n){cout<<"atmost 4 phlosophers can be allowed to eat simultaneously\n";return;}
+//search the person whose left side is empty and give let him eat with chopsticks i and i+1
+while(m--)
+{
+for(int i=0;i<n;i++)
+{
+if(arr[i]==1 && arr[(i+n-1)%5]==0)
+{ cout<<"Philosopher " << i<< " ate with "<< (i+n-1)%5 <<" and "<< i <<"\n";
+arr[i]=0;break;}
+}
+}
+}
+int main()
+{
+while(1)
+{
+cout<<"Enter the number of philosophers who are feeling hungry: ";
+cin>> m;
+cout<<"Enter their position(0-indexed) : ";
+for(int i=0;i<m;i++){int a;cin>>a;arr[a] = 1;}
+dine();
+for(int i=0;i<n;i++)arr[i]=0;
+}
+}
+
+
+
+
+//reader writer problem
+#include <iostream>
+using namespace std;
+int read_count = 0;
+bool read = false;
+bool write = false ;
+void start_read()
+{
+if(write)
+{ cout<<"Writing in execution - Can't read\n";return; }
+read = true;
+read_count++;
+cout<<"Reading in progress\n";
+cout<<"Number of readers - "<<read_count<<endl;
+}
+void stop_read()
+{
+if(!read)
+return;
+read_count--;
+if(read_count==0)
+read=false;
+cout<<"Reading ended\n";
+cout<<"Number of readers - "<<read_count<<endl;
+return ;
+}
+void start_write()
+{
+write = true;
+if(read_count==0)
+cout<<"Writing in execution\n";
+else
+cout<<"Reading in execution - Can't write\n";
+}
+void stop_write()
+{
+if(write) write = false;
+else write = true;
+cout<<"Writing stopped\n";
+}
+int main()
+{
+int choice = 0;
+while(1)
+{
+cout<<"1.Start Reading 2. Start Writing 3. Stop Reading 4. Stop Writing\n";
+cin>>choice;
+switch(choice)
+{
+case 1: start_read(); break;
+case 2: start_write(); break;
+case 3: stop_read(); break;
+case 4: stop_write(); break;
+default : cout<<"Choose correct option\n";
+}
+}
+}
+
+
+
+//longest remaining time first
+
+#include <bits/stdc++.h>
+using namespace std;
+
+struct timer{
+	int id,at,bt,ct,tat;
+};
+
+class compare
+{
+
+public:
+
+  bool operator() (timer &a, timer &b) const
+  {
+	if(a.bt!=b.bt)
+    return (a.bt<b.bt);
+	return a.at<b.at;
+  }
+};
+bool my(timer a,timer b)
+{
+	return a.at<b.at;
+}
+bool id(timer a,timer b)
+{
+	return a.id<b.id;
+}
+
+int main()
+{
+	int n;
+	cin>>n;
+	timer arr[n];
+	for(int i=0;i<n;i++)
+	cin>>arr[i].id>>arr[i].at>>arr[i].bt;
+		
+	sort(arr,arr+n,my);
+	int unit =arr[0].at;//Current time
+	int i = 0;//Position i n the arrival array
+
+	//deque < pair <int, int> > q;
+	priority_queue < timer , vector<timer> , compare > q;
+	do
+	{
+		while(i<n && unit>=arr[i].at){q.push(arr[i]);i++;}
+		timer temp = q.top();q.pop();temp.bt--;unit++;
+		if(temp.bt>0)q.push(temp);
+		else arr[temp.id-1].ct=unit;
+	}while(!q.empty());	
+	//sort(arr,arr+n,id);
+	for(int i=0;i<n;i++)
+	{arr[i].tat= arr[i].ct-arr[i].at;cout<<arr[i].id<<" "<<arr[i].at<<" "<<arr[i].bt<<" "<<arr[i].tat<<"\n";}
+
+	int sum =0;
+	for(int i=0;i<n;i++)
+		sum+=arr[i].tat;
+	float avg = (float)sum/n;
+	cout<<"Average turn around time using LRTF is "<<avg<<"\n"; 
+	return 0;
+}
+
+
+
+
+
+//multilevel Q big one
+
+#include<bits/stdc++.h>
+using namespace std;
+class Process
+{
+public:
+int pid,at,bt,ct,tat,obt,index,curq;
+Process(int id,int a,int b,int i)
+{
+pid=id;
+at=a;
+bt=b;
+obt=bt;
+index=i;
+curq=1;
+}
+};
+bool cmp (Process y,Process x)
+{
+return y.at<x.at?true:y.at>x.at?false:y.pid<x.pid;
+}
+int main()
+{
+int n;
+cout<<"Enter the number of processes"<<endl;
+cin>>n;
+vector<Process> v;
+Process pp1(0,0,0,0);
+vector<Process> ans(n+1,pp1);
+for(int i=1;i<=n;i++)
+{
+cout<<"Enter the PID, Arrival Time, Burst time of process "<<i<<endl;
+int a,b,c;
+cin>>a>>b>>c;
+v.push_back(Process(a,b,c,i));
+}
+sort(v.begin(),v.end(),cmp);
+int tq1=4;
+int tq2=8;
+int tq3=12;
+int tq;
+int time=v[0].at;
+int i=0;
+Process *sch=0;
+queue<Process> pq1;
+queue<Process> pq2;
+queue<Process> pq3;
+float avgtat=0;
+int te=0;
+while(i<n||sch||!(pq1.empty()&&pq2.empty()&&pq3.empty()))
+{
+while(i<n)
+{
+if(v[i].at==time)
+{
+pq1.push(v[i]);
+cout<<"PID="<<v[i].pid<<" created and arrived in queue 0 at
+time="<<time<<endl;
+i++;
+}
+else
+break;
+}
+if(sch==0)
+{
+if(!pq1.empty())+
+{
+Process xy=pq1.front();
+sch=&xy;
+pq1.pop();
+tq=4;
+}
+else if(!pq2.empty())
+{
+Process xy=pq2.front();
+sch=&xy;
+pq2.pop();
+tq=8;
+}
+else if(!pq3.empty())
+{
+Process xy=pq3.front();
+sch=&xy;
+pq3.pop();
+tq=12;
+}
+else
+{
+time++;
+continue;
+}
+cout<<"PID="<<(sch->pid)<<" running at time "<<time<<endl;
+time++;
+te=1;
+}
+else
+{
+(sch->bt)--;
+int x=(sch->bt);
+if(x==0)
+{
+cout<<"PID="<<(sch->pid)<<" completed at time "<<time<<endl;
+sch->ct=time;
+sch->tat=time-sch->at;
+avgtat+=time-(sch->at);
+ans[sch->index]=*sch;
+sch=0;
+te=-1;
+time--;
+}
+else if(te==tq&&!(pq1.empty()&&pq2.empty()&&pq3.empty()))
+{
+cout<<"PID="<<(sch->pid)<<" suspended at time "<<time<<endl;
+if(sch->curq==1)
+{
+sch->curq=2;
+pq2.push(*sch);
+cout<<"PID="<<sch->pid<<" aged and entered queue 1 at
+time"<<time<<endl;
+}
+else if(sch->curq==2)
+{
+sch->curq=3;
+cout<<"PID="<<sch->pid<<" aged and entered queue 2 at
+time"<<time<<endl;
+pq3.push(*sch);
+}
+else
+{
+pq3.push(*sch);
+}
+sch=0;
+time--;
+te=-1;
+}
+else if(te==tq)
+{
+te=0;
+}
+te++;
+time++;
+}
+}
+cout<<"PID\tAT\tBT\tCT\tTAT\tWT"<<endl;
+for(int i=1;i<=n;i++)
+{
+cout<<ans[i].pid<<"\t"<<ans[i].at<<"\t"<<ans[i].obt<<"\t"<<ans[i].ct<<"\t"<<ans[i].tat<<"\t"<
+<(ans[i].tat-ans[i].obt)<<endl;
+}
+avgtat/=n;
+cout<<"Average turn around time="<<avgtat<<endl;
+return 0;
+}
